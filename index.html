@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <h1>ONLINE DRAWING BOARD </h1>
+    <body style="background-color:rgb(255, 255, 255);">
+
+    </body>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Drawing Board </title>
+    <style> 
+        body {
+            margin: 30px;;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #ffffff;
+        }
+        
+        .toolbar {
+            margin-bottom: 10px;
+        }
+
+        canvas {
+            border: 15px solid #eaa7a7;
+            touch-action: none;
+        }
+
+        @media (max-width: 600px) {
+            canvas {
+                width: 100%;
+                height: calc(100vh - 50px);
+            }
+
+            .toolbar {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        canvas {
+            width: 100%;
+            height: calc(100vh - 50px);
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <input type="color" id="colorPicker" value="#000000">
+        <button id="pencil">Pencil</button>
+        <button id="eraser">Eraser</button>
+        <button id="save">Save</button>
+        <button id="load">Load</button>
+    </div>
+    <canvas id="drawingCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const colorPicker = document.getElementById('colorPicker');
+        const pencilBtn = document.getElementById('pencil');
+        const eraserBtn = document.getElementById('eraser');
+        const saveBtn = document.getElementById('save');
+        const loadBtn = document.getElementById('load');
+
+        canvas.width = window.innerWidth - 20;
+        canvas.height = window.innerHeight - 100;
+
+        let drawing = false;
+        let erasing = false;
+        let currentColor = '#000';
+
+        canvas.addEventListener('mousedown', () => drawing = true);
+        canvas.addEventListener('mouseup', () => {
+            drawing = false;
+            ctx.beginPath();
+        });
+        canvas.addEventListener('mousemove', draw);
+
+        colorPicker.addEventListener('input', (e) => currentColor = e.target.value);
+
+        pencilBtn.addEventListener('click', () => {
+            erasing = false;
+            ctx.strokeStyle = currentColor;
+        });
+
+        eraserBtn.addEventListener('click', () => {
+            erasing = true;
+            ctx.strokeStyle = '#fff';
+        });
+
+        saveBtn.addEventListener('click', saveDrawing);
+        loadBtn.addEventListener('click', loadDrawing);
+
+        function draw(e) {
+            if (!drawing) return;
+
+            ctx.lineWidth = erasing ? 10 : 2;
+            ctx.lineCap = 'round';
+
+            ctx.lineTo(e.clientX, e.clientY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX, e.clientY);
+        }
+
+        function saveDrawing() {
+            const dataURL = canvas.toDataURL();
+            localStorage.setItem('drawing', dataURL);
+        }
+
+        function loadDrawing() {
+            const dataURL = localStorage.getItem('drawing');
+            if (dataURL) {
+                const img = new Image();
+                img.src = dataURL;
+                img.onload = () => ctx.drawImage(img, 0, 0);
+            }
+        }
+    </script>
+</body>
+</html>
